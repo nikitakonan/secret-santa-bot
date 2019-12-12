@@ -1,0 +1,29 @@
+html
+  head
+    title= Дока
+    link(rel="stylesheet", href="style.css")
+  body
+    h1='Дока ✊'
+    table(class="table")
+      tr
+        th='Команда'
+        th='Описание'
+      tr
+        td
+          span(class="command")='status'
+        td='Текущий статус'
+      tr
+        td
+          span(class="command")='list'
+        td='Показать список зарегистрированных пользователей'
+      tr
+        td
+          span(class="command")='register'
+        td='Зарегистрироваться для участия'
+      tr
+        td
+          span(class="command")='unregister'
+        td
+          | Сняться с 
+          span(style="text-decoration: line-through;") дистанции
+          | регистрации

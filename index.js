@@ -13,6 +13,7 @@ const webhookPath = '/viber/webhook';
 
 const app = express();
 
+app.use(express.static('static'));
 app.set('view engine', 'pug');
 
 const bot = new ViberBot({
@@ -46,6 +47,49 @@ bot.onTextMessage(/^register$/i, (message, response) => {
         });
 });
 
+bot.onTextMessage(/^unregister$/i, (message, response) => {
+    const { id, name } = response.userProfile;
+
+    getUsers()
+        .then(users => {
+            const existing = users.findIndex(u => u.id === id);
+            if (existing === -1) {
+                response.send(new TextMessage(`Вас нету в списках 🙀🤭`));
+                return true;
+            }
+
+            users.splice(existing, 1);
+            return setUsers(users);
+        })
+        .then((skip) => {
+            if (skip) {
+                return;
+            }
+            response.send(new TextMessage(`${name}, Вы успешно удалены 😀`));
+        })
+        .catch(() => {
+            response.send(new TextMessage(`Что-то пошло не так 😟`));
+        });
+});
+
+bot.onTextMessage(/^list$/i, (message, response) => {
+    getUsers()
+        .then(users => {
+            if (users.length === 0) {
+                response.send(new TextMessage(`Никого нет 😢`));
+                return;
+            }
+
+            response.send([
+                new TextMessage(`Поприветствуем участников 👇`),
+                ...users.map(u => new TextMessage(u.name))
+            ]);
+        })
+        .catch(() => {
+            response.send(new TextMessage(`Что-то пошло не так 😟`));
+        });
+});
+
 bot.onTextMessage(/^status$/i, (message, response) => {
     const { id, name } = response.userProfile;
     getUsers()
@@ -63,11 +107,21 @@ bot.onTextMessage(/^status$/i, (message, response) => {
 });
 
 app.get('/', (req, res) => {
-    res.render('users', {
-        title: 'Secret Santa',
-        message: 'Привет',
-        users: registeredUsers
-    });
+    getUsers()
+        .then(users => {
+            res.render('users', {
+                title: 'Secret Santa',
+                message: 'Привет',
+                users
+            });
+        })
+        .catch(() => {
+            res.send(`Something went wrong`);
+        });
+});
+
+app.get('/docs', (req, res) => {
+    res.render('docs');
 });
 
 app.use(webhookPath, bot.middleware());
