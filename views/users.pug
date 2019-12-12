@@ -1,0 +1,13 @@
+html
+  head
+    title= title
+  body
+    h1= message
+    p='Зарегистрированные пользователи'
+    table
+      tr
+        th=Name
+      each usr in users
+        tr
+          td=usr.name
+    
