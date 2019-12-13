@@ -23,6 +23,16 @@ const bot = new ViberBot({
     avatar
 });
 
+bot.onSubscribe(response => {
+    console.log(`[onSubscribe]`);
+    console.dir(response);
+    response.send(new TextMessage(`Welcome ${response.userProfile.name}`));
+});
+
+bot.onUnsubscribe(userId => {
+    console.log(`Unsubscribed: ${userId}`);
+});
+
 bot.onTextMessage(/^register$/i, (message, response) => {
     const { id, name } = response.userProfile;
 
