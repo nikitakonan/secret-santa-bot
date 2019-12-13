@@ -113,6 +113,10 @@ bot.onTextMessage(/^status$/i, (message, response) => {
         });
 });
 
+bot.onTextMessage(/(?!(register|unregister|list|status))/i, (message, response) => {
+    response.send(new TextMessage(`Привет ${response.userProfile.name}. Пожалуйста введите одну из команд: register, unregister, list или status`));
+});
+
 app.get('/', (req, res) => {
     getUsers()
         .then(users => {
