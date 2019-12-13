@@ -5,6 +5,7 @@ const getUsers = () => {
         fs.readFile('./users.json', (err, data) => {
             if (err) {
                 if (err.code === 'ENOENT') {
+                    console.log(`NO FILE users.json, CREATING NEW ONE`);
                     fs.writeFile('./users.json', '[]', err => {
                         if (err) {
                             reject(err);
