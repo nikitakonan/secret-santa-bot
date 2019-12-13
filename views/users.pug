@@ -11,8 +11,11 @@ html
       each usr in users
         tr
           td=usr.name
-    if status
-      div status
+    if allGifted
+      nav
+        ul
+          li
+            a(href="/result") Show result
     else 
       form(action="/get-started", method="POST", style="text-align: center;")
         input(type='submit', value='Lets get started', style="font-size: 20px; padding: 20px; color: #fff; cursor: pointer; background-color: #f00; font-weight: bold; text-transform: uppercase;")

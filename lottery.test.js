@@ -11,5 +11,9 @@ const testUsers = [
     { id: '9', name: 'Peter' },
 ];
 
-const result = lottery(testUsers);
+const onlyOneUser = [
+    { id: '1', name: 'Some name' }
+]
+
+const result = lottery(onlyOneUser);
 console.dir(result);

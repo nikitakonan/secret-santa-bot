@@ -1,0 +1,10 @@
+html
+  head
+    title= title
+  body
+    a(href="/")='Home 🏡'
+    each usr in users
+      div
+        span=usr.name
+        |&nbsp;готовит подарок для&nbsp;
+        b=usr.to

@@ -1,5 +1,14 @@
 // NOTE This is mutating function
 module.exports = function (users) {
+    if (users.length === 0) {
+        return [];
+    }
+    if (users.length === 1) {
+        const [only] = users;
+        // gift to yourself
+        only.to = only.name;
+        return users;
+    }
     users.forEach((user, i) => {
         const toGift = users.filter((u, j) => !u.gifted && j !== i);
         if (toGift.length === 0) {

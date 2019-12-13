@@ -23,8 +23,6 @@ const bot = new ViberBot({
     avatar
 });
 
-let status = undefined;
-
 bot.onTextMessage(/^register$/i, (message, response) => {
     const { id, name } = response.userProfile;
 
@@ -112,11 +110,13 @@ bot.onTextMessage(/^status$/i, (message, response) => {
 app.get('/', (req, res) => {
     getUsers()
         .then(users => {
+            const allGifted = users.every(u => !!u.to);
+
             res.render('users', {
                 title: 'Secret Santa',
                 message: 'Привет',
                 users,
-                status
+                allGifted
             });
         })
         .catch(() => {
@@ -128,12 +128,26 @@ app.get('/docs', (req, res) => {
     res.render('docs');
 });
 
+app.get('/result', (req, res) => {
+    getUsers()
+        .then(users => {
+            res.render('result', { users });
+        })
+        .catch(reason => res.send(`Something went wrong`));
+});
+
 app.post('/get-started', (req, res) => {
     getUsers()
         .then(users => {
             const result = lottery(users);
-            status = result;
-            res.redirect('/');
+            setUsers(result)
+                .then(() => {
+                    // TODO Send messages to users
+                    res.redirect('/result');
+                })
+                .catch(reason => {
+                    res.send(`Something went wrong`);
+                });
         })
         .catch(reason => {
             res.statusCode = 500;
