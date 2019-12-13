@@ -3,6 +3,7 @@ const express = require('express');
 const ViberBot = require('viber-bot').Bot;
 const TextMessage = require('viber-bot').Message.Text;
 const { getUsers, setUsers } = require('./fileApi');
+const lottery = require('./lottery');
 
 const authToken = process.env.PRIVATE_TOKEN;
 const name = process.env.NAME;
@@ -21,6 +22,8 @@ const bot = new ViberBot({
     name,
     avatar
 });
+
+let status = undefined;
 
 bot.onTextMessage(/^register$/i, (message, response) => {
     const { id, name } = response.userProfile;
@@ -112,7 +115,8 @@ app.get('/', (req, res) => {
             res.render('users', {
                 title: 'Secret Santa',
                 message: 'Привет',
-                users
+                users,
+                status
             });
         })
         .catch(() => {
@@ -122,6 +126,19 @@ app.get('/', (req, res) => {
 
 app.get('/docs', (req, res) => {
     res.render('docs');
+});
+
+app.post('/get-started', (req, res) => {
+    getUsers()
+        .then(users => {
+            const result = lottery(users);
+            status = result;
+            res.redirect('/');
+        })
+        .catch(reason => {
+            res.statusCode = 500;
+            res.send('Something went wrong');
+        });
 });
 
 app.use(webhookPath, bot.middleware());

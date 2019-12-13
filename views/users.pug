@@ -3,6 +3,7 @@ html
     title= title
   body
     h1= message
+    a(href="/docs") Доки
     p='Зарегистрированные пользователи'
     table
       tr
@@ -10,7 +11,9 @@ html
       each usr in users
         tr
           td=usr.name
-
-    form(action="/get-started", method="POST", style="text-align: center;")
-      input(type='submit', value='Lets get started', style="font-size: 20px; padding: 20px; color: #fff; cursor: pointer; background-color: #f00; font-weight: bold; text-transform: uppercase;")
+    if status
+      div status
+    else 
+      form(action="/get-started", method="POST", style="text-align: center;")
+        input(type='submit', value='Lets get started', style="font-size: 20px; padding: 20px; color: #fff; cursor: pointer; background-color: #f00; font-weight: bold; text-transform: uppercase;")
     
