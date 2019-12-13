@@ -146,6 +146,11 @@ app.post('/get-started', (req, res) => {
     getUsers()
         .then(users => {
             const result = lottery(users);
+
+            result.forEach(({ id, name, to }) => {
+                bot.sendMessage({ id, name }, new TextMessage(`Уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`));
+            });
+
             setUsers(result)
                 .then(() => {
                     // TODO Send messages to users

@@ -4,11 +4,13 @@ html
   body
     a(href="/")='Home 🏡'
 
-    each usr in users
-      div
-        span=usr.name
-        |&nbsp;готовит подарок для&nbsp;
-        b=usr.to
+    div Розыгрыш состоялся, количество участников
+    span=users.length
+    //- each usr in users
+    //-   div
+    //-     span=usr.name
+    //-     |&nbsp;готовит подарок для&nbsp;
+    //-     b=usr.to
 
     form(action="/clean-result" method="POST")
       input(type="submit", value="Перезапуск")
