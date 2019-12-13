@@ -116,7 +116,7 @@ bot.onTextMessage(/^status$/i, (message, response) => {
 app.get('/', (req, res) => {
     getUsers()
         .then(users => {
-            const allGifted = users.every(u => !!u.to);
+            const allGifted = users.length > 0 && users.every(u => !!u.to);
 
             res.render('users', {
                 title: 'Secret Santa',
@@ -154,6 +154,21 @@ app.post('/get-started', (req, res) => {
                 .catch(reason => {
                     res.send(`Something went wrong`);
                 });
+        })
+        .catch(reason => {
+            res.statusCode = 500;
+            res.send('Something went wrong');
+        });
+});
+
+app.post('/clean-result', (req, res) => {
+    getUsers()
+        .then(users => {
+            const x = users.map(({ to, ...user }) => user);
+            return setUsers(x);
+        })
+        .then(() => {
+            res.redirect('/');
         })
         .catch(reason => {
             res.statusCode = 500;
