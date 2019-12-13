@@ -95,7 +95,7 @@ bot.onTextMessage(/^status$/i, (message, response) => {
     const { id, name } = response.userProfile;
     getUsers()
         .then(users => {
-            const allGifted = users.every(u => !!u.to);
+            const allGifted = users.length > 0 && users.every(u => !!u.to);
             const user = users.find(u => u.id === id);
 
             if (allGifted) {
