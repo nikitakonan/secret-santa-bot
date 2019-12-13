@@ -95,7 +95,13 @@ bot.onTextMessage(/^status$/i, (message, response) => {
     const { id, name } = response.userProfile;
     getUsers()
         .then(users => {
+            const allGifted = users.every(u => !!u.to);
             const user = users.find(u => u.id === id);
+
+            if (allGifted) {
+                return response.send(new TextMessage(`Розыгрыш состоялся вы дарите подарок для ${user.to}`));
+            }
+
             const txt = user ?
                 `${name}, Вы успешно зарегистрированы, ожидайте других пользователей 😆` :
                 `Для участия введите сообщение: register 😅`;
