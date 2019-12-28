@@ -30,7 +30,15 @@ bot.start((ctx) => {
     return ctx.reply(`Welcome! ${name}`);
 });
 
+const registerLock = {};
+
 bot.command('register', (ctx) => {
+    const lockKey = ctx.from.id;
+    if (registerLock[lockKey]) {
+        return ctx.reply(`В процессе регистрации`);
+    }
+    registerLock[lockKey] = true;
+
     const chatId = ctx.message.chat.id;
     const { id } = ctx.from;
     const name = getName(ctx);
@@ -53,7 +61,10 @@ bot.command('register', (ctx) => {
         })
         .catch(() => {
             ctx.reply(`Что-то пошло не так 😟`);
-        });
+        })
+        .finally(() => {
+            delete registerLock[lockKey];
+        })
 });
 
 bot.command('unregister', (ctx) => {
