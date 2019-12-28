@@ -23,7 +23,7 @@ const getName = (ctx) => {
     const hasFirstName = !!first_name;
     const hasLastName = !!last_name;
     const fullName = ` (${first_name || ''} ${last_name || ''})`;
-    return `${username}${hasFirstName || hasLastName ? fullName : ''}`;
+    return `${username || ''}${hasFirstName || hasLastName ? fullName : ''}`;
 }
 
 bot.start((ctx) => {
