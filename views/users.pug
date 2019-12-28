@@ -7,10 +7,16 @@ html
     h3='Зарегистрированные пользователи'
     table
       tr
-        th=Name
+        th='Имя'
+        th='С подарком'
       each usr in users
         tr
           td=usr.name
+          td
+            if usr.gifted
+              'с подарком'
+            else 
+              'без подарка'
     if allGifted
       nav
         ul

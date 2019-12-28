@@ -17,6 +17,8 @@ module.exports = function (users) {
             const prev = users[i - 1];
             user.to = prev.to;
             prev.to = user.name;
+            user.gifted = true;
+            prev.gifted = true;
         } else {
             const idx = Math.floor(Math.random() * toGift.length);
             const to = toGift[idx];
