@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const Telegraf = require('telegraf')
-const { getUsers, setUsers } = require('./fileApi');
 const lottery = require('./lottery');
+const api = require('./fireBase');
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
@@ -18,7 +18,7 @@ app.use(express.static('static'));
 app.set('view engine', 'pug');
 
 bot.start((ctx) => {
-    const { id, first_name, last_name, username, language_code, is_bot } = ctx.from;
+    const { id, first_name, last_name, username } = ctx.from;
     return ctx.reply(`Welcome! [${id}] ${first_name} ${last_name} (${username})`);
 });
 
@@ -27,7 +27,7 @@ bot.command('register', (ctx) => {
     const { id, first_name, last_name } = ctx.from;
     const name = `${first_name} ${last_name}`;
 
-    return getUsers()
+    return api.getUsers()
         .then(users => {
             const existing = users.find(u => u.id === id);
             if (existing) {
@@ -35,11 +35,10 @@ bot.command('register', (ctx) => {
                     .then(() => true);
             }
 
-            users.push({ id, chatId, name });
-            return setUsers(users);
+            return api.addUser({ id, chatId, name });
         })
         .then((skip) => {
-            if (skip) {
+            if (skip === true) {
                 return;
             }
             return ctx.reply(`${name}, Вы успешно зарегистрированы 😀`);
@@ -53,30 +52,21 @@ bot.command('unregister', (ctx) => {
     const { id, first_name, last_name } = ctx.from;
     const name = `${first_name} ${last_name}`;
 
-    getUsers()
-        .then(users => {
-            const existing = users.findIndex(u => u.id === id);
-            if (existing === -1) {
+    api.removeUser(id)
+        .then(result => {
+            if (result === `NOT_EXIST`) {
                 ctx.reply(`Вас нету в списках 🙀🤭`);
-                return true;
-            }
-
-            users.splice(existing, 1);
-            return setUsers(users);
-        })
-        .then((skip) => {
-            if (skip) {
                 return;
             }
             ctx.reply(`${name}, Вы успешно удалены 😀`);
         })
-        .catch(() => {
-            ctx.reply(`Что-то пошло не так 😟`);
+        .catch((reason) => {
+            ctx.reply(`Что-то пошло не так 😟${JSON.stringify(reason)}`);
         });
 });
 
 bot.command('list', (ctx) => {
-    getUsers()
+    api.getUsers()
         .then(users => {
             if (users.length === 0) {
                 ctx.reply(`Никого нет 😢`);
@@ -94,7 +84,7 @@ bot.command('status', (ctx) => {
     const { id, first_name, last_name } = ctx.from;
     const name = `${first_name} ${last_name}`;
 
-    getUsers()
+    api.getUsers()
         .then(users => {
             const allGifted = users.length > 0 && users.every(u => !!u.to);
             const user = users.find(u => u.id === id);
@@ -115,8 +105,8 @@ bot.command('status', (ctx) => {
 
 bot.launch();
 
-app.get('/', (req, res) => {
-    getUsers()
+app.get('/', (_, res) => {
+    api.getUsers()
         .then(users => {
             const allGifted = users.length > 0 && users.every(u => !!u.to);
 
@@ -137,49 +127,48 @@ app.get('/docs', (req, res) => {
 });
 
 app.get('/result', (req, res) => {
-    getUsers()
+    api.getUsers()
         .then(users => {
             res.render('result', { users });
         })
-        .catch(reason => res.send(`Something went wrong`));
+        .catch(_ => res.send(`Something went wrong`));
 });
 
 app.post('/get-started', (req, res) => {
-    getUsers()
+    api.getUsers()
         .then(users => {
             const result = lottery(users);
 
-            result.forEach(({ name, to, chatId }) => {
+            return Promise.all(result.map(({ documentId, ...user }) => {
+                return api.updateUser(documentId, user);
+            }))
+        })
+        .then(users => {
+            users.forEach(({ name, to, chatId }) => {
                 bot.telegram.sendMessage(chatId, `Уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`);
             });
 
-            setUsers(result)
-                .then(() => {
-                    // TODO Send messages to users
-                    res.redirect('/result');
-                })
-                .catch(reason => {
-                    res.send(`Something went wrong`);
-                });
+            res.redirect('/result');
         })
-        .catch(reason => {
+        .catch(_ => {
             res.statusCode = 500;
-            console.dir(reason);
+            res.send(`Something went wrong`);
         });
 });
 
 app.post('/clean-result', (req, res) => {
-    getUsers()
+    api.getUsers()
         .then(users => {
-            const x = users.map(({ to, ...user }) => user);
-            return setUsers(x);
+            return Promise.all(users.map(({ documentId, to, ...user }) => {
+                return api.setUser(documentId, user);
+            }))
         })
         .then(() => {
             res.redirect('/');
         })
         .catch(reason => {
             res.statusCode = 500;
-            res.send('Something went wrong');
+            res.send(`Something went wrong. ${JSON.stringify(reason)}`);
         });
 });
 
