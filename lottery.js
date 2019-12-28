@@ -7,6 +7,7 @@ module.exports = function (users) {
         const [only] = users;
         // gift to yourself
         only.to = only.name;
+        only.gifted = true;
         return users;
     }
     users.forEach((user, i) => {
