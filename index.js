@@ -17,9 +17,17 @@ bot.telegram.setWebhook(`${WEBHOOK_URL}/secret-path`);
 app.use(express.static('static'));
 app.set('view engine', 'pug');
 
+const getName = (ctx) => {
+    const { username, first_name, last_name } = ctx.from;
+    const hasFirstName = !!first_name;
+    const hasLastName = !!last_name;
+    const fullName = ` (${first_name || ''} ${last_name || ''})`;
+    return `${username}${hasFirstName || hasLastName ? fullName : ''}`;
+}
+
 bot.start((ctx) => {
-    const { first_name, last_name } = ctx.from;
-    return ctx.reply(`Welcome! ${first_name || ''} ${last_name || ''}`);
+    const name = getName(ctx);
+    return ctx.reply(`Welcome! ${name}`);
 });
 
 bot.command('register', (ctx) => {
