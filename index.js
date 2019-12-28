@@ -142,7 +142,7 @@ app.get('/result', (req, res) => {
         .catch(_ => res.send(`Something went wrong`));
 });
 
-app.post('/get-started', (req, res) => {
+app.post('/get-started', (_, res) => {
     api.getUsers()
         .then(users => {
             const result = lottery(users);
@@ -167,7 +167,7 @@ app.post('/get-started', (req, res) => {
 app.post('/clean-result', (req, res) => {
     api.getUsers()
         .then(users => {
-            return Promise.all(users.map(({ documentId, to, ...user }) => {
+            return Promise.all(users.map(({ documentId, to, gifted, ...user }) => {
                 return api.setUser(documentId, user);
             }))
         })
