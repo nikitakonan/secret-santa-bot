@@ -3,6 +3,7 @@ const express = require('express');
 const Telegraf = require('telegraf')
 const lottery = require('./lottery');
 const api = require('./fireBase');
+const { testAllGifted, allHaveTo, noDuplicate } = require('./testFns');
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
@@ -188,6 +189,19 @@ app.post('/clean-result', (req, res) => {
         .catch(reason => {
             res.statusCode = 500;
             res.send(`Что-то пошло не так 😟. ${JSON.stringify(reason)}`);
+        });
+});
+
+app.get('/test-result', (_, res) => {
+    api.getUsers()
+        .then(users => {
+            testAllGifted(users);
+            allHaveTo(users);
+            noDuplicate(users);
+            res.send(`SUCCESS`);
+        })
+        .catch((reason) => {
+            res.send(`ERROR: ${reason}`);
         });
 });
 

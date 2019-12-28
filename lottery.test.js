@@ -1,4 +1,6 @@
 const lottery = require('./lottery');
+const { testAllGifted, allHaveTo, noDuplicate } = require('./testFns');
+
 const testUsers = [
     { id: '1', name: 'Vasya' },
     { id: '2', name: 'Volodya' },
@@ -46,30 +48,4 @@ for (let i = 0; i < 100; i++) {
 for (let i = 0; i < 100; i++) {
     test8Users();
     console.log('\x1b[32m%s\x1b[0m', `(${i}) [test8Users] Success`);
-}
-
-function testAllGifted(arr) {
-    if (!arr.every(x => x.gifted)) {
-        throw new Error(`Not all users are gifted`);
-    }
-}
-
-function allHaveTo(arr) {
-    if (!arr.every(x => typeof x.to === 'string')) {
-        throw new Error(`Not all users are gifted`);
-    }
-}
-
-function noDuplicate(arr) {
-    const map = arr.map(x => x.to).reduce((acc, curr) => {
-        if (curr in acc) {
-            acc[curr]++;
-        } else {
-            acc[curr] = 1;
-        }
-        return acc;
-    }, {});
-    if (Object.values(map).some(x => x > 1)) {
-        throw new Error(`There are duplicates`);
-    }
 }
