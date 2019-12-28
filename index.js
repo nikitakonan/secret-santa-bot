@@ -165,7 +165,11 @@ app.post('/get-started', (_, res) => {
         })
         .then(users => {
             users.forEach(({ name, to, chatId }) => {
-                bot.telegram.sendMessage(chatId, `Уважаемая/уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`);
+                try {
+                    bot.telegram.sendMessage(chatId, `Уважаемая/уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`);
+                } catch (e) {
+                    console.error(`Can't send message to ${name}`);
+                }
             });
 
             res.redirect('/result');
@@ -173,6 +177,21 @@ app.post('/get-started', (_, res) => {
         .catch(_ => {
             res.statusCode = 500;
             res.send(`Что-то пошло не так 😟`);
+        });
+});
+
+app.get('/gift-to/:id', (req, res) => {
+    const userId = req.params.id;
+    api.getUsers()
+        .then(users => {
+            const user = users.find(u => u.id === userId);
+            if (!user) {
+                return res.send(`Пользователь не найден 🤷`);
+            }
+            if (!user.to) {
+                return res.send(`Некому дарить 🤷‍♀️`);
+            }
+            res.send(`Вы дарите ${user.to}`);
         });
 });
 
