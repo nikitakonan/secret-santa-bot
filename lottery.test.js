@@ -37,6 +37,14 @@ function test8Users() {
     noDuplicate(result);
 }
 
+function test7Users() {
+    const users = testUsers.map(u => ({ ...u })).slice(0, 7);
+    const result = lottery(users);
+    testAllGifted(result);
+    allHaveTo(result);
+    noDuplicate(result);
+}
+
 test1User();
 console.log('\x1b[32m%s\x1b[0m', `[test1User] Success`);
 
@@ -47,5 +55,10 @@ for (let i = 0; i < 100; i++) {
 
 for (let i = 0; i < 100; i++) {
     test8Users();
+    console.log('\x1b[32m%s\x1b[0m', `(${i}) [test8Users] Success`);
+}
+
+for (let i = 0; i < 100; i++) {
+    test7Users();
     console.log('\x1b[32m%s\x1b[0m', `(${i}) [test8Users] Success`);
 }
