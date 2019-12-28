@@ -92,7 +92,7 @@ bot.command('list', (ctx) => {
                 return;
             }
 
-            ctx.reply(`Поприветствуем участников 👇${users.map(u => u.name).join(',')}`);
+            ctx.reply(`Поприветствуем участников 👏 ${users.map(u => u.name).join(',')}`);
         })
         .catch(() => {
             ctx.reply(`Что-то пошло не так 😟`);
@@ -109,7 +109,7 @@ bot.command('status', (ctx) => {
             const user = users.find(u => u.id === id);
 
             if (allGifted) {
-                return ctx.reply(`Розыгрыш состоялся вы дарите подарок для ${user.to}`);
+                return ctx.reply(`Розыгрыш состоялся Вы дарите подарок для ${user.to}`);
             }
 
             const msg = user ?
@@ -137,7 +137,7 @@ app.get('/', (_, res) => {
             });
         })
         .catch(() => {
-            res.send(`Something went wrong`);
+            res.send(`Что-то пошло не так 😟`);
         });
 });
 
@@ -150,7 +150,7 @@ app.get('/result', (req, res) => {
         .then(users => {
             res.render('result', { users });
         })
-        .catch(_ => res.send(`Something went wrong`));
+        .catch(_ => res.send(`Что-то пошло не так 😟`));
 });
 
 app.post('/get-started', (_, res) => {
@@ -164,14 +164,14 @@ app.post('/get-started', (_, res) => {
         })
         .then(users => {
             users.forEach(({ name, to, chatId }) => {
-                bot.telegram.sendMessage(chatId, `Уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`);
+                bot.telegram.sendMessage(chatId, `Уважаемая/уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`);
             });
 
             res.redirect('/result');
         })
         .catch(_ => {
             res.statusCode = 500;
-            res.send(`Something went wrong`);
+            res.send(`Что-то пошло не так 😟`);
         });
 });
 
@@ -187,7 +187,7 @@ app.post('/clean-result', (req, res) => {
         })
         .catch(reason => {
             res.statusCode = 500;
-            res.send(`Something went wrong. ${JSON.stringify(reason)}`);
+            res.send(`Что-то пошло не так 😟. ${JSON.stringify(reason)}`);
         });
 });
 
