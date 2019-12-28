@@ -47,7 +47,7 @@ bot.command('register', (ctx) => {
         .then(users => {
             const existing = users.find(u => u.id === id);
             if (existing) {
-                return ctx.reply(`Вы уже зарегистрированы 🤦`)
+                return ctx.reply(`Вы уже зарегистрированы 😉`)
                     .then(() => true);
             }
 
