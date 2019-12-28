@@ -1,11 +1,12 @@
 html
   head
     title= title
+    link(rel="stylesheet", href="style.css")
   body
     h1= message
     a(href="/docs") Доки
     h3='Зарегистрированные пользователи'
-    table
+    table(class="table")
       tr
         th='Имя'
         th='С подарком'
@@ -14,9 +15,9 @@ html
           td=usr.name
           td
             if usr.gifted
-              'с подарком'
+              p='с подарком'
             else 
-              'без подарка'
+              p='без подарка'
     if allGifted
       nav
         ul
