@@ -32,8 +32,8 @@ bot.start((ctx) => {
 
 bot.command('register', (ctx) => {
     const chatId = ctx.message.chat.id;
-    const { id, first_name, last_name } = ctx.from;
-    const name = `${first_name || ''} ${last_name || ''}`;
+    const { id } = ctx.from;
+    const name = getName(ctx);
 
     return api.getUsers()
         .then(users => {
@@ -57,8 +57,8 @@ bot.command('register', (ctx) => {
 });
 
 bot.command('unregister', (ctx) => {
-    const { id, first_name, last_name } = ctx.from;
-    const name = `${first_name} ${last_name}`;
+    const { id } = ctx.from;
+    const name = getName(ctx);
 
     api.removeUser(id)
         .then(result => {
@@ -89,8 +89,8 @@ bot.command('list', (ctx) => {
 });
 
 bot.command('status', (ctx) => {
-    const { id, first_name, last_name } = ctx.from;
-    const name = `${first_name} ${last_name}`;
+    const { id } = ctx.from;
+    const name = getName(ctx);
 
     api.getUsers()
         .then(users => {
