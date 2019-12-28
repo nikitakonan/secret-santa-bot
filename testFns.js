@@ -19,6 +19,7 @@ function noDuplicate(arr) {
         }
         return acc;
     }, {});
+    console.dir(map);
     if (Object.values(map).some(x => x > 1)) {
         throw new Error(`There are duplicates`);
     }
