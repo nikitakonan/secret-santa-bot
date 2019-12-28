@@ -18,14 +18,14 @@ app.use(express.static('static'));
 app.set('view engine', 'pug');
 
 bot.start((ctx) => {
-    const { id, first_name, last_name, username } = ctx.from;
-    return ctx.reply(`Welcome! [${id}] ${first_name} ${last_name} (${username})`);
+    const { first_name, last_name } = ctx.from;
+    return ctx.reply(`Welcome! ${first_name || ''} ${last_name || ''}`);
 });
 
 bot.command('register', (ctx) => {
     const chatId = ctx.message.chat.id;
     const { id, first_name, last_name } = ctx.from;
-    const name = `${first_name} ${last_name}`;
+    const name = `${first_name || ''} ${last_name || ''}`;
 
     return api.getUsers()
         .then(users => {
