@@ -1,71 +1,63 @@
 require('dotenv').config();
 const express = require('express');
-const ViberBot = require('viber-bot').Bot;
-const TextMessage = require('viber-bot').Message.Text;
+const Telegraf = require('telegraf')
 const { getUsers, setUsers } = require('./fileApi');
 const lottery = require('./lottery');
 
-const authToken = process.env.PRIVATE_TOKEN;
-const name = process.env.NAME;
-const webhookUrl = process.env.WEBHOOK_URL;
-const avatar = process.env.AVATAR_URL;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
+const PORT = process.env.PORT;
 
-const webhookPath = '/viber/webhook';
+const bot = new Telegraf(BOT_TOKEN);
 
 const app = express();
 
+app.use(bot.webhookCallback('/secret-path'));
+bot.telegram.setWebhook(`${WEBHOOK_URL}/secret-path`);
 app.use(express.static('static'));
 app.set('view engine', 'pug');
 
-const bot = new ViberBot({
-    authToken,
-    name,
-    avatar
+bot.start((ctx) => {
+    const { id, first_name, last_name, username, language_code, is_bot } = ctx.from;
+    return ctx.reply(`Welcome! [${id}] ${first_name} ${last_name} (${username})`);
 });
 
-bot.onSubscribe(response => {
-    console.log(`[onSubscribe]`);
-    console.dir(response);
-    response.send(new TextMessage(`Welcome ${response.userProfile.name}`));
-});
+bot.command('register', (ctx) => {
+    const chatId = ctx.message.chat.id;
+    const { id, first_name, last_name } = ctx.from;
+    const name = `${first_name} ${last_name}`;
 
-bot.onUnsubscribe(userId => {
-    console.log(`Unsubscribed: ${userId}`);
-});
-
-bot.onTextMessage(/^register$/i, (message, response) => {
-    const { id, name } = response.userProfile;
-
-    getUsers()
+    return getUsers()
         .then(users => {
             const existing = users.find(u => u.id === id);
             if (existing) {
-                response.send(new TextMessage(`Вы уже зарегистрированы 🤦`));
-                return true;
+                return ctx.reply(`Вы уже зарегистрированы 🤦`)
+                    .then(() => true);
             }
 
-            users.push({ id, name });
+            users.push({ id, chatId, name });
             return setUsers(users);
         })
         .then((skip) => {
             if (skip) {
                 return;
             }
-            response.send(new TextMessage(`${name}, Вы успешно зарегистрированы 😀`));
+            return ctx.reply(`${name}, Вы успешно зарегистрированы 😀`);
         })
         .catch(() => {
-            response.send(new TextMessage(`Что-то пошло не так 😟`));
+            ctx.reply(`Что-то пошло не так 😟`);
         });
 });
 
-bot.onTextMessage(/^unregister$/i, (message, response) => {
-    const { id, name } = response.userProfile;
+bot.command('unregister', (ctx) => {
+    const { id, first_name, last_name } = ctx.from;
+    const name = `${first_name} ${last_name}`;
 
     getUsers()
         .then(users => {
             const existing = users.findIndex(u => u.id === id);
             if (existing === -1) {
-                response.send(new TextMessage(`Вас нету в списках 🙀🤭`));
+                ctx.reply(`Вас нету в списках 🙀🤭`);
                 return true;
             }
 
@@ -76,56 +68,52 @@ bot.onTextMessage(/^unregister$/i, (message, response) => {
             if (skip) {
                 return;
             }
-            response.send(new TextMessage(`${name}, Вы успешно удалены 😀`));
+            ctx.reply(`${name}, Вы успешно удалены 😀`);
         })
         .catch(() => {
-            response.send(new TextMessage(`Что-то пошло не так 😟`));
+            ctx.reply(`Что-то пошло не так 😟`);
         });
 });
 
-bot.onTextMessage(/^list$/i, (message, response) => {
+bot.command('list', (ctx) => {
     getUsers()
         .then(users => {
             if (users.length === 0) {
-                response.send(new TextMessage(`Никого нет 😢`));
+                ctx.reply(`Никого нет 😢`);
                 return;
             }
 
-            response.send([
-                new TextMessage(`Поприветствуем участников 👇`),
-                ...users.map(u => new TextMessage(u.name))
-            ]);
+            ctx.reply(`Поприветствуем участников 👇${users.map(u => u.name).join(',')}`);
         })
         .catch(() => {
-            response.send(new TextMessage(`Что-то пошло не так 😟`));
+            ctx.reply(`Что-то пошло не так 😟`);
         });
 });
 
-bot.onTextMessage(/^status$/i, (message, response) => {
-    const { id, name } = response.userProfile;
+bot.command('status', (ctx) => {
+    const { id, first_name, last_name } = ctx.from;
+    const name = `${first_name} ${last_name}`;
+
     getUsers()
         .then(users => {
             const allGifted = users.length > 0 && users.every(u => !!u.to);
             const user = users.find(u => u.id === id);
 
             if (allGifted) {
-                return response.send(new TextMessage(`Розыгрыш состоялся вы дарите подарок для ${user.to}`));
+                return ctx.reply(`Розыгрыш состоялся вы дарите подарок для ${user.to}`);
             }
 
-            const txt = user ?
+            const msg = user ?
                 `${name}, Вы успешно зарегистрированы, ожидайте других пользователей 😆` :
-                `Для участия введите сообщение: register 😅`;
-            const msg = new TextMessage(txt);
-            response.send(msg);
+                `Для участия введите сообщение: /register 😅`;
+            ctx.reply(msg);
         })
         .catch(() => {
-            response.send(new TextMessage(`Что-то пошло не так 😟`));
+            ctx.reply(`Что-то пошло не так 😟`);
         });
 });
 
-bot.onTextMessage(/(?!(register|unregister|list|status))/i, (message, response) => {
-    response.send(new TextMessage(`Привет ${response.userProfile.name}. Пожалуйста введите одну из команд: register, unregister, list или status`));
-});
+bot.launch();
 
 app.get('/', (req, res) => {
     getUsers()
@@ -161,8 +149,8 @@ app.post('/get-started', (req, res) => {
         .then(users => {
             const result = lottery(users);
 
-            result.forEach(({ id, name, to }) => {
-                bot.sendMessage({ id, name }, new TextMessage(`Уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`));
+            result.forEach(({ name, to, chatId }) => {
+                bot.telegram.sendMessage(chatId, `Уважаемый ${name}, розыгрыш состоялся 🥳. Вы дарите 🎁 для ${to}.`);
             });
 
             setUsers(result)
@@ -176,7 +164,7 @@ app.post('/get-started', (req, res) => {
         })
         .catch(reason => {
             res.statusCode = 500;
-            res.send('Something went wrong');
+            console.dir(reason);
         });
 });
 
@@ -195,11 +183,6 @@ app.post('/clean-result', (req, res) => {
         });
 });
 
-app.use(webhookPath, bot.middleware());
-
-app.listen(process.env.PORT, () => {
-    console.log(`app is listening on ${process.env.PORT}`);
-    bot.setWebhook(webhookUrl + webhookPath)
-        .then((res) => console.log(`successfully set webhook`))
-        .catch(reason => console.error(reason));
+app.listen(PORT, () => {
+    console.log(`app is listening on ${PORT}`);
 });
